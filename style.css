@@ -93,6 +93,7 @@ button {
   grid-template-rows: auto 1fr auto auto;
   grid-column-gap: 4rem;
   grid-row-gap: 3rem;
+  transition: all 0.3s ease;
 
   margin-bottom: 10rem; /* boşluk kalması için */
 }
@@ -112,6 +113,7 @@ button {
 .balance__date {
   font-size: 1.6rem;
   margin-top: 0.5rem;
+  color: #3a3b3a;
 }
 
 .balance__value {
