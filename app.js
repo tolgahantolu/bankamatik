@@ -35,8 +35,14 @@ const accounts = [DUMMY_ACC1, DUMMY_ACC2, DUMMY_ACC3, DUMMY_ACC4];
 const inputUsername = document.querySelector(".navigation__input--login");
 const inputPassword = document.querySelector(".navigation__input--password");
 
+const labelBalance = document.querySelector(".balance__value");
+const labelSummaryIn = document.querySelector(".summary__value--in");
+const labelSummaryOut = document.querySelector(".summary__value--out");
+const labelSummaryInt = document.querySelector(".summary__value--interest");
+
 const btnLogin = document.querySelector(".navigation__icon");
 
+const movementsContainer = document.querySelector(".movements");
 const appContainer = document.querySelector(".app");
 
 ////////////////////////////////// FUNCTIONS
@@ -51,6 +57,58 @@ const createUsername = (accs) => {
   });
 };
 createUsername(accounts);
+
+const displayBalance = (account) => {
+  account.balance = account.movements.reduce((acc, mov) => {
+    return acc + mov;
+  }, 0);
+  labelBalance.textContent = `$${account.balance}`;
+};
+
+const displayMovements = (movements) => {
+  movementsContainer.innerHTML = "";
+
+  movements.forEach((mov, i) => {
+    const type = mov > 0 ? "deposit" : "withdrawal";
+
+    console.log(type);
+
+    const html = `
+		<div class="movements__row">
+			<div class="movements__type movements__type--${type}">
+				${i + 1} ${type}
+			</div>
+			<div class="movements__date">
+				28/06/2022
+			</div>
+			<div class="movements__value">$${mov}</div>
+		</div>
+	`;
+
+    movementsContainer.insertAdjacentHTML("afterbegin", html);
+  });
+};
+
+const displaySummary = (account) => {
+  const incomes = account.movements
+    .filter((mov) => mov > 0)
+    .reduce((acc, mov) => acc + mov, 0);
+  labelSummaryIn.textContent = `$${incomes}`;
+
+  const out = account.movements
+    .filter((mov) => mov < 0)
+    .reduce((acc, mov) => acc + mov, 0);
+  labelSummaryOut.textContent = `$${Math.abs(out)}`;
+
+  const interest = account.movements
+    .filter((mov) => mov > 0)
+    .map((deposit) => (deposit * account.interestRate) / 100)
+    .filter((int) => {
+      return int >= 1;
+    })
+    .reduce((acc, int) => acc + int, 0);
+  labelSummaryInt.textContent = `$${interest}`;
+};
 
 ////////////////////////////////// EVENT HANDLERS
 let currentAcc;
@@ -67,4 +125,13 @@ btnLogin.addEventListener("click", () => {
     //clear inputs
     inputUsername.value = inputPassword.value = "";
   }
+
+  //  calc and display balance
+  displayBalance(currentAcc);
+
+  // display movements
+  displayMovements(currentAcc.movements);
+
+  //  calc and display summary
+  displaySummary(currentAcc);
 });
