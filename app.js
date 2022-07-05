@@ -34,6 +34,11 @@ const accounts = [DUMMY_ACC1, DUMMY_ACC2, DUMMY_ACC3, DUMMY_ACC4];
 // selecting elements
 const inputUsername = document.querySelector(".navigation__input--login");
 const inputPassword = document.querySelector(".navigation__input--password");
+const inputTransferAmount = document.querySelector(
+  ".form__input--amount-transfer"
+);
+const inputTransferTo = document.querySelector(".form__input--to");
+const inputLoanAmount = document.querySelector(".form__input--amount-loan");
 
 const labelBalance = document.querySelector(".balance__value");
 const labelSummaryIn = document.querySelector(".summary__value--in");
@@ -41,6 +46,8 @@ const labelSummaryOut = document.querySelector(".summary__value--out");
 const labelSummaryInt = document.querySelector(".summary__value--interest");
 
 const btnLogin = document.querySelector(".navigation__icon");
+const btnTransfer = document.querySelector(".form__btn--transfer");
+const btnLoan = document.querySelector(".form__btn--loan");
 
 const movementsContainer = document.querySelector(".movements");
 const appContainer = document.querySelector(".app");
@@ -70,8 +77,6 @@ const displayMovements = (movements) => {
 
   movements.forEach((mov, i) => {
     const type = mov > 0 ? "deposit" : "withdrawal";
-
-    console.log(type);
 
     const html = `
 		<div class="movements__row">
@@ -118,7 +123,7 @@ btnLogin.addEventListener("click", () => {
     return acc.username === inputUsername.value;
   });
 
-  if (currentAcc?.password === Number(inputPassword.value)) {
+  if (currentAcc?.password === +inputPassword.value) {
     // display ui
     appContainer.style.opacity = 1;
 
@@ -134,4 +139,55 @@ btnLogin.addEventListener("click", () => {
 
   //  calc and display summary
   displaySummary(currentAcc);
+});
+
+btnTransfer.addEventListener("click", (e) => {
+  e.preventDefault();
+
+  const amount = +inputTransferAmount.value;
+  const receiverAccount = accounts.find((acc) => {
+    return acc.username === inputTransferTo.value;
+  });
+
+  inputTransferAmount.value = inputTransferTo.value = "";
+
+  if (
+    receiverAccount &&
+    amount > 0 &&
+    currentAcc.balance >= amount &&
+    receiverAccount?.username !== currentAcc.username
+  ) {
+    currentAcc.movements.push(-amount);
+    receiverAccount.movements.push(amount);
+
+    //  calc and display balance
+    displayBalance(currentAcc);
+
+    // display movements
+    displayMovements(currentAcc.movements);
+
+    //  calc and display summary
+    displaySummary(currentAcc);
+  }
+});
+
+btnLoan.addEventListener("click", (e) => {
+  e.preventDefault();
+
+  const loan = +inputLoanAmount.value;
+
+  if (loan > 0 && currentAcc.movements.some((mov) => mov >= loan * 0.1)) {
+    currentAcc.movements.push(loan);
+
+    //  calc and display balance
+    displayBalance(currentAcc);
+
+    // display movements
+    displayMovements(currentAcc.movements);
+
+    //  calc and display summary
+    displaySummary(currentAcc);
+  }
+
+  inputLoanAmount.value = "";
 });
