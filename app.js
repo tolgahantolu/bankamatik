@@ -41,6 +41,8 @@ const inputTransferTo = document.querySelector(".form__input--to");
 const inputLoanAmount = document.querySelector(".form__input--amount-loan");
 
 const labelBalance = document.querySelector(".balance__value");
+const labelDate = document.querySelector(".date");
+const movementsDate = document.querySelector(".movements__date");
 const labelSummaryIn = document.querySelector(".summary__value--in");
 const labelSummaryOut = document.querySelector(".summary__value--out");
 const labelSummaryInt = document.querySelector(".summary__value--interest");
@@ -48,12 +50,12 @@ const labelSummaryInt = document.querySelector(".summary__value--interest");
 const btnLogin = document.querySelector(".navigation__icon");
 const btnTransfer = document.querySelector(".form__btn--transfer");
 const btnLoan = document.querySelector(".form__btn--loan");
+const btnSort = document.querySelector(".btn--sort");
 
 const movementsContainer = document.querySelector(".movements");
 const appContainer = document.querySelector(".app");
 
 ////////////////////////////////// FUNCTIONS
-// create username
 const createUsername = (accs) => {
   accs.forEach((acc) => {
     acc.username = acc.name
@@ -72,10 +74,12 @@ const displayBalance = (account) => {
   labelBalance.textContent = `$${account.balance}`;
 };
 
-const displayMovements = (movements) => {
+const displayMovements = (movements, sort = false) => {
   movementsContainer.innerHTML = "";
 
-  movements.forEach((mov, i) => {
+  const movs = sort ? movements.slice().sort((a, b) => a - b) : movements;
+
+  movs.forEach((mov, i) => {
     const type = mov > 0 ? "deposit" : "withdrawal";
 
     const html = `
@@ -115,6 +119,17 @@ const displaySummary = (account) => {
   labelSummaryInt.textContent = `$${interest}`;
 };
 
+const updateUI = (account) => {
+  //  calc and display balance
+  displayBalance(account);
+
+  // display movements
+  displayMovements(account.movements);
+
+  //  calc and display summary
+  displaySummary(account);
+};
+
 ////////////////////////////////// EVENT HANDLERS
 let currentAcc;
 btnLogin.addEventListener("click", () => {
@@ -131,14 +146,21 @@ btnLogin.addEventListener("click", () => {
     inputUsername.value = inputPassword.value = "";
   }
 
-  //  calc and display balance
-  displayBalance(currentAcc);
+  const now = new Date();
+  const options = {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+  };
 
-  // display movements
-  displayMovements(currentAcc.movements);
+  labelDate.textContent = new Intl.DateTimeFormat(
+    navigator.language,
+    options
+  ).format(now);
 
-  //  calc and display summary
-  displaySummary(currentAcc);
+  updateUI(currentAcc);
 });
 
 btnTransfer.addEventListener("click", (e) => {
@@ -160,14 +182,7 @@ btnTransfer.addEventListener("click", (e) => {
     currentAcc.movements.push(-amount);
     receiverAccount.movements.push(amount);
 
-    //  calc and display balance
-    displayBalance(currentAcc);
-
-    // display movements
-    displayMovements(currentAcc.movements);
-
-    //  calc and display summary
-    displaySummary(currentAcc);
+    updateUI(currentAcc);
   }
 });
 
@@ -179,15 +194,17 @@ btnLoan.addEventListener("click", (e) => {
   if (loan > 0 && currentAcc.movements.some((mov) => mov >= loan * 0.1)) {
     currentAcc.movements.push(loan);
 
-    //  calc and display balance
-    displayBalance(currentAcc);
-
-    // display movements
-    displayMovements(currentAcc.movements);
-
-    //  calc and display summary
-    displaySummary(currentAcc);
+    updateUI(currentAcc);
   }
 
   inputLoanAmount.value = "";
+});
+
+let sorted;
+btnSort.addEventListener("click", (e) => {
+  e.preventDefault();
+
+  displayMovements(currentAcc.movements, !sorted);
+
+  sorted = !sorted;
 });
