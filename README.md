@@ -1,4 +1,3 @@
 ## 🚀DEMO: https://tolgahantolu.github.io/bankamatik/
 
-#### username: tt 
-#### password 1111
+### `username: tt` and  `password 1111`
